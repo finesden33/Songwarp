@@ -31,13 +31,14 @@ public class ProcessPlaylistUseCaseFactory {
 
     private ProcessPlaylistUseCaseFactory() {}
 
-    public static MatchOrSplitSelectionView create(ViewManagerModel viewManagerModel,
+    public static MatchOrSplitSelectionView create(SpotifyAPIAdapterInterface spotifyAPI, YoutubeAPIAdapterInterface youtubeAPI,
+                                                   ViewManagerModel viewManagerModel,
                                                    ProcessPlaylistViewModel processPlaylistViewModel, PutPlaylistViewModel putPlaylistViewModel,
                                                    TempFileWriterDataAccessObject fileWriter, TempFileWriterDataAccessObject backupFileWriter,
                                                    SavePlaylistController savePlaylistController, ViewTraverseController viewTraverseController) {
         try {
-            YoutubeMatchController youtubeMatchController = createYoutubeMatchUseCase(viewManagerModel, processPlaylistViewModel, putPlaylistViewModel, fileWriter, backupFileWriter);
-            SpotifyMatchController spotifyMatchController = createSpotifyMatchUseCase(viewManagerModel, processPlaylistViewModel, putPlaylistViewModel, fileWriter, backupFileWriter);
+            YoutubeMatchController youtubeMatchController = createYoutubeMatchUseCase(viewManagerModel, processPlaylistViewModel, putPlaylistViewModel, fileWriter, backupFileWriter, spotifyAPI);
+            SpotifyMatchController spotifyMatchController = createSpotifyMatchUseCase(viewManagerModel, processPlaylistViewModel, putPlaylistViewModel, fileWriter, backupFileWriter, youtubeAPI);
             return new MatchOrSplitSelectionView(processPlaylistViewModel, youtubeMatchController, spotifyMatchController, savePlaylistController, viewTraverseController);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "could not load initial page");
@@ -48,11 +49,9 @@ public class ProcessPlaylistUseCaseFactory {
     private static YoutubeMatchController createYoutubeMatchUseCase(
             ViewManagerModel viewManagerModel, ProcessPlaylistViewModel processPlaylistViewModel,
             PutPlaylistViewModel putPlaylistViewModel, TempFileWriterDataAccessObject fileWriter,
-            TempFileWriterDataAccessObject backupFileWriter) throws IOException {
+            TempFileWriterDataAccessObject backupFileWriter, SpotifyAPIAdapterInterface api) throws IOException {
 
         YoutubeMatchOutputBoundary presenter = new YoutubeMatchPresenter(viewManagerModel, processPlaylistViewModel, putPlaylistViewModel);
-
-        SpotifyAPIAdapterInterface api = new SpotifyAPIAdapter();
         YoutubeMatchDataAccessInterface dataAccessObject = new YoutubeMatchDataAccessObject(api);
 
         YoutubeMatchInputBoundary interactor = new YoutubeMatchInteractor(dataAccessObject, fileWriter, backupFileWriter, presenter);
@@ -63,19 +62,14 @@ public class ProcessPlaylistUseCaseFactory {
     private static SpotifyMatchController createSpotifyMatchUseCase(
             ViewManagerModel viewManagerModel, ProcessPlaylistViewModel processPlaylistViewModel,
             PutPlaylistViewModel putPlaylistViewModel, TempFileWriterDataAccessObject fileWriter,
-            TempFileWriterDataAccessObject backupFileWriter) throws IOException {
+            TempFileWriterDataAccessObject backupFileWriter, YoutubeAPIAdapterInterface api) throws IOException {
 
         SpotifyMatchOutputBoundary presenter = new SpotifyMatchPresenter(viewManagerModel, processPlaylistViewModel, putPlaylistViewModel);
-
-        YoutubeAPIAdapterInterface api = new YoutubeAPIAdapter();
         SpotifyMatchDataAccessInterface dataAccessObject = new SpotifyMatchDataAccessObject(api);
 
         SpotifyMatchInputBoundary interactor = new SpotifyMatchInteractor(dataAccessObject, fileWriter, backupFileWriter, presenter);
 
         return new SpotifyMatchController(interactor);
     }
-
-
-
 
 }

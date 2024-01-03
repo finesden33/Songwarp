@@ -21,6 +21,12 @@ public class SpotifyAPIAdapter extends APIcaller implements SpotifyAPIAdapterInt
     }
 
     @Override
+    public void setTokens(String clientID, String clientSecret) {
+        this.clientID = clientID;
+        this.clientSecret = clientSecret;
+    }
+
+    @Override
     public String getPlaylist(String playlistID) {
         String apiCall = apiMainUrl + "playlists/" + playlistID;
         APIRequestInfo info = new APIRequestInfo(apiCall, "GET", null, null);

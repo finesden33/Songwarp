@@ -45,7 +45,8 @@ public class PutPlaylistUseCaseFactory {
 
     private PutPlaylistUseCaseFactory() {}
 
-    public static OutputPageView create(ViewManagerModel viewManagerModel,
+    public static OutputPageView create(SpotifyAPIAdapterInterface spotifyAPI, YoutubeAPIAdapterInterface youtubeAPI,
+                                        ViewManagerModel viewManagerModel,
                                         PutPlaylistViewModel putPlaylistViewModel,
                                         ProcessPlaylistViewModel processPlaylistViewModel,
                                         GetPlaylistViewModel getPlaylistViewModel,
@@ -53,8 +54,8 @@ public class PutPlaylistUseCaseFactory {
         try {
             SavePlaylistController savePlaylistController = createSavePlaylistUseCase(viewManagerModel, putPlaylistViewModel, fileWriter);
             ViewTraverseController viewTraverseController = createViewTraverseUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, putPlaylistViewModel);
-            YoutubePutController youtubePutController = createYoutubePutUseCase(viewManagerModel, putPlaylistViewModel);
-            SpotifyPutController spotifyPutController = createSpotifyPutUseCase(viewManagerModel, putPlaylistViewModel);
+            YoutubePutController youtubePutController = createYoutubePutUseCase(viewManagerModel, putPlaylistViewModel, spotifyAPI);
+            SpotifyPutController spotifyPutController = createSpotifyPutUseCase(viewManagerModel, putPlaylistViewModel, youtubeAPI);
             ViewPlaylistController viewPlaylistController = createViewPlaylistUseCase(putPlaylistViewModel);
             return new OutputPageView(putPlaylistViewModel, getPlaylistViewModel, savePlaylistController, viewTraverseController, youtubePutController, spotifyPutController, viewPlaylistController);
         } catch (IOException e) {
@@ -84,8 +85,7 @@ public class PutPlaylistUseCaseFactory {
         return new ViewTraverseController(viewTraverseInteractor);
     }
 
-    public static YoutubePutController createYoutubePutUseCase(ViewManagerModel viewManagerModel, PutPlaylistViewModel putPlaylistViewModel) {
-        SpotifyAPIAdapterInterface api = new SpotifyAPIAdapter();
+    public static YoutubePutController createYoutubePutUseCase(ViewManagerModel viewManagerModel, PutPlaylistViewModel putPlaylistViewModel, SpotifyAPIAdapterInterface api) {
 
         YoutubePutDataAccessInterface youtubePutDataAccessObject = new YoutubePutDataAccessObject(api);
         YoutubePutOutputBoundary youtubePutPresenter = new YoutubePutPresenter(viewManagerModel, putPlaylistViewModel);
@@ -95,9 +95,7 @@ public class PutPlaylistUseCaseFactory {
         return new YoutubePutController(youtubePutInteractor);
     }
 
-    public static SpotifyPutController createSpotifyPutUseCase(ViewManagerModel viewManagerModel, PutPlaylistViewModel putPlaylistViewModel) {
-        YoutubeAPIAdapterInterface api = new YoutubeAPIAdapter();
-
+    public static SpotifyPutController createSpotifyPutUseCase(ViewManagerModel viewManagerModel, PutPlaylistViewModel putPlaylistViewModel, YoutubeAPIAdapterInterface api) {
         SpotifyPutDataAccessInterface spotifyPutDataAccessObject = new SpotifyPutDataAccessObject(api);
         SpotifyPutOutputBoundary spotifyPutPresenter = new SpotifyPutPresenter(viewManagerModel, putPlaylistViewModel);
 

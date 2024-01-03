@@ -1,5 +1,9 @@
 package app;
 
+import data_access.APIs.SpotifyAPIAdapter;
+import data_access.APIs.SpotifyAPIAdapterInterface;
+import data_access.APIs.YoutubeAPIAdapter;
+import data_access.APIs.YoutubeAPIAdapterInterface;
 import data_access.TempFileWriterDataAccessObject;
 import interface_adapter.GetPlaylistViewModel;
 import interface_adapter.ProcessPlaylistViewModel;
@@ -31,6 +35,10 @@ public class Main {
         JPanel views = new JPanel(cardLayout);
         application.add(views);
 
+        //API objects
+        SpotifyAPIAdapterInterface spotifyAPI = new SpotifyAPIAdapter();
+        YoutubeAPIAdapterInterface youtubeAPI = new YoutubeAPIAdapter();
+
         // This keeps track of and manages which view is currently showing.
         ViewManagerModel viewManagerModel = new ViewManagerModel();
         new ViewManager(views, cardLayout, viewManagerModel);
@@ -45,17 +53,17 @@ public class Main {
         TempFileWriterDataAccessObject backupFileWriter = new TempFileWriterDataAccessObject("backup.json");
 
         // create the views
-        InitialView initialView = GetPlaylistUseCaseFactory.create(
+        InitialView initialView = GetPlaylistUseCaseFactory.create(spotifyAPI, youtubeAPI,
                 viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, putPlaylistViewModel, fileWriter);
         assert initialView != null;
         views.add(initialView, initialView.viewName);  // viewName is "page 1"
 
-        OutputPageView outputPageView = PutPlaylistUseCaseFactory.create(
+        OutputPageView outputPageView = PutPlaylistUseCaseFactory.create(spotifyAPI, youtubeAPI,
                 viewManagerModel, putPlaylistViewModel, processPlaylistViewModel, getPlaylistViewModel, fileWriter);
         assert outputPageView != null;
         views.add(outputPageView, outputPageView.viewName);
 
-        MatchOrSplitSelectionView matchOrSplitSelectionView = ProcessPlaylistUseCaseFactory.create(
+        MatchOrSplitSelectionView matchOrSplitSelectionView = ProcessPlaylistUseCaseFactory.create(spotifyAPI, youtubeAPI,
                 viewManagerModel, processPlaylistViewModel, putPlaylistViewModel, fileWriter, backupFileWriter,
                 outputPageView.getSavePlaylistController(), outputPageView.getViewTraverseController());
         assert matchOrSplitSelectionView != null;
