@@ -28,7 +28,6 @@ public class OutputPageView extends JPanel implements ActionListener, PropertyCh
     private final SavePlaylistController savePlaylistController;
     private final ViewTraverseController viewTraverseController;
     private final ViewPlaylistController viewPlaylistController;
-
     private final JButton save;
     private final JButton spotifyPut;
     private final JButton youtubePut;

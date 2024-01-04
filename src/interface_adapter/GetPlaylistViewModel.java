@@ -4,7 +4,7 @@ import java.beans.PropertyChangeSupport;
 
 public class GetPlaylistViewModel extends ViewModel {
     public final String LOADTOKEN_BUTTON_LABEL = "Load your own API key sheet";
-    public final String TOKENSAVE_BUTTON_LABEL = "Save a API key sheet";
+    public final String TOKENSAVE_BUTTON_LABEL = "Create an API key sheet";
     public final String TITLE_LABEL = "Start page";
     public final String URL_LABEL = "Enter playlist url";
     public final String YOUTUBEGET_BUTTON_LABEL = "From Youtube Url";
