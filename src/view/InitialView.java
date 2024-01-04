@@ -4,6 +4,8 @@ import interface_adapter.GetPlaylistState;
 import interface_adapter.GetPlaylistViewModel;
 
 import interface_adapter.load_playlist.LoadPlaylistController;
+import interface_adapter.load_token.LoadTokenController;
+import interface_adapter.save_token.SaveTokenController;
 import interface_adapter.spotify_get.SpotifyGetController;
 import interface_adapter.youtube_get.YoutubeGetController;
 
@@ -24,19 +26,27 @@ public class InitialView extends JPanel implements ActionListener, PropertyChang
     private final YoutubeGetController youtubeGetController;
     private final SpotifyGetController spotifyGetController;
     private final LoadPlaylistController loadPlaylistController;
+    private final LoadTokenController loadTokenController;
+    private final SaveTokenController saveTokenController;
     private final JButton youtubeGet;
     private final JButton spotifyGet;
     private final JButton loadPlaylist;
+    private final JButton loadToken;
+    private final JButton saveToken;
 
     public InitialView(GetPlaylistViewModel getPlaylistViewModel,
                        YoutubeGetController youtubeGetController,
                        SpotifyGetController spotifyGetController,
-                       LoadPlaylistController loadPlaylistController
+                       LoadPlaylistController loadPlaylistController,
+                       LoadTokenController loadTokenController,
+                       SaveTokenController saveTokenController
                        ) {
         this.getPlaylistViewModel = getPlaylistViewModel;
         this.youtubeGetController = youtubeGetController;
         this.spotifyGetController = spotifyGetController;
         this.loadPlaylistController = loadPlaylistController;
+        this.loadTokenController = loadTokenController;
+        this.saveTokenController = saveTokenController;
 
         getPlaylistViewModel.addPropertyChangeListener(this);
 
@@ -54,6 +64,48 @@ public class InitialView extends JPanel implements ActionListener, PropertyChang
         loadPlaylist = new JButton(getPlaylistViewModel.LOADPLAYLIST_BUTTON_LABEL);
         buttons.add(loadPlaylist);
 
+        JPanel keyStuff = new JPanel();
+        loadToken = new JButton(getPlaylistViewModel.LOADTOKEN_BUTTON_LABEL);
+        keyStuff.add(loadToken);
+        saveToken = new JButton(getPlaylistViewModel.TOKENSAVE_BUTTON_LABEL);
+        keyStuff.add(saveToken);
+
+
+        loadToken.addActionListener(
+                e -> {
+                    if (e.getSource().equals(loadToken)) {
+                        loadTokenController.execute();
+                    }
+                }
+        );
+        saveToken.addActionListener(
+                e -> {
+                    if (e.getSource().equals(saveToken)) {
+                        JTextField[] textFields = new JTextField[5];
+                        JPanel panel = new JPanel(new GridLayout(0, 1));
+                        String[] keys = {"youtubeKey", "youtubeClientID", "youtubeClientSecret", "spotifyClientID", "spotifyClientSecret"};
+
+                        for (int i = 0; i < 5; i++) {
+                            textFields[i] = new JTextField(30); // You can adjust the size of the text fields here
+                            panel.add(new JLabel(keys[i]));
+                            panel.add(textFields[i]);
+                        }
+                        int result = JOptionPane.showConfirmDialog(null, panel,
+                                "Enter the appropriate information", JOptionPane.OK_CANCEL_OPTION);
+                        if (result == JOptionPane.OK_OPTION) {
+                            StringBuilder info = new StringBuilder();
+                            for (int i = 0; i < 5; i++) {
+                                info.append(keys[i]).append(": ").append(textFields[i].getText()).append("\n");
+                            }
+                            System.out.println("Entered information:\n" + info.toString());
+
+                            saveTokenController.execute(textFields);
+                        }
+
+                    }
+                }
+        );
+
         loadPlaylist.addActionListener(
                 e -> {
                     if (e.getSource().equals(loadPlaylist)) {
@@ -61,7 +113,6 @@ public class InitialView extends JPanel implements ActionListener, PropertyChang
                     }
                 }
         );
-
         youtubeGet.addActionListener(
             new ActionListener() {
                 @Override
@@ -108,6 +159,7 @@ public class InitialView extends JPanel implements ActionListener, PropertyChang
         this.add(title);
         this.add(urlInput);
         this.add(buttons);
+        this.add(keyStuff);
     }
 
     /**

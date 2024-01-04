@@ -1,16 +1,15 @@
 package app;
 
-import data_access.APIs.SpotifyAPIAdapter;
+import data_access.*;
 import data_access.APIs.SpotifyAPIAdapterInterface;
-import data_access.APIs.YoutubeAPIAdapter;
 import data_access.APIs.YoutubeAPIAdapterInterface;
-import data_access.LoadPlaylistDataAccessObject;
-import data_access.SpotifyGetDataAccessObject;
-import data_access.TempFileWriterDataAccessObject;
-import data_access.YoutubeGetDataAccessObject;
 import interface_adapter.*;
 import interface_adapter.load_playlist.LoadPlaylistController;
 import interface_adapter.load_playlist.LoadPlaylistPresenter;
+import interface_adapter.load_token.LoadTokenController;
+import interface_adapter.load_token.LoadTokenPresenter;
+import interface_adapter.save_token.SaveTokenController;
+import interface_adapter.save_token.SaveTokenPresenter;
 import interface_adapter.spotify_get.SpotifyGetController;
 import interface_adapter.spotify_get.SpotifyGetPresenter;
 import interface_adapter.youtube_get.YoutubeGetController;
@@ -19,6 +18,14 @@ import use_case.load_playlist.LoadPlaylistDataAccessInterface;
 import use_case.load_playlist.LoadPlaylistInputBoundary;
 import use_case.load_playlist.LoadPlaylistInteractor;
 import use_case.load_playlist.LoadPlaylistOutputBoundary;
+import use_case.load_token.LoadTokenDataAccessInterface;
+import use_case.load_token.LoadTokenInputBoundary;
+import use_case.load_token.LoadTokenInteractor;
+import use_case.load_token.LoadTokenOutputBoundary;
+import use_case.save_token.SaveTokenDataAccessInterface;
+import use_case.save_token.SaveTokenInputBoundary;
+import use_case.save_token.SaveTokenInteractor;
+import use_case.save_token.SaveTokenOutputBoundary;
 import use_case.spotify_get.SpotifyGetDataAccessInterface;
 import use_case.spotify_get.SpotifyGetInputBoundary;
 import use_case.spotify_get.SpotifyGetInteractor;
@@ -36,21 +43,46 @@ public class GetPlaylistUseCaseFactory {
 
     private GetPlaylistUseCaseFactory() {}
 
-    public static InitialView create(ViewManagerModel viewManagerModel,
-                                     GetPlaylistViewModel getPlaylistViewModel,
-                                     ProcessPlaylistViewModel processPlaylistViewModel,
-                                     PutPlaylistViewModel putPlaylistViewModel,
+    public static InitialView create(SpotifyAPIAdapterInterface spotifyAPI, YoutubeAPIAdapterInterface youtubeAPI,
+                                     ViewManagerModel viewManagerModel, GetPlaylistViewModel getPlaylistViewModel,
+                                     ProcessPlaylistViewModel processPlaylistViewModel, PutPlaylistViewModel putPlaylistViewModel,
                                      TempFileWriterDataAccessObject fileWriter) {
         try {
+            LoadTokenController loadTokenController = createLoadTokenUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, putPlaylistViewModel, youtubeAPI, spotifyAPI);
             LoadPlaylistController loadPlaylistController = createLoadPlaylistUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, putPlaylistViewModel);
-            YoutubeGetController youtubeGetController = createYoutubeGetUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, fileWriter);
-            SpotifyGetController spotifyGetController = createSpotifyGetUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, fileWriter);
-            return new InitialView(getPlaylistViewModel, youtubeGetController, spotifyGetController, loadPlaylistController);
+            YoutubeGetController youtubeGetController = createYoutubeGetUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, fileWriter, youtubeAPI);
+            SpotifyGetController spotifyGetController = createSpotifyGetUseCase(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, fileWriter, spotifyAPI);
+            SaveTokenController saveTokenController = createSaveTokenUseCase(viewManagerModel, getPlaylistViewModel, youtubeAPI, spotifyAPI);
+            return new InitialView(getPlaylistViewModel, youtubeGetController, spotifyGetController, loadPlaylistController, loadTokenController, saveTokenController);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "could not load initial page");
         }
         return null;
     }
+
+    private static LoadTokenController createLoadTokenUseCase(
+            ViewManagerModel viewManagerModel, GetPlaylistViewModel getPlaylistViewModel,
+            ProcessPlaylistViewModel processPlaylistViewModel, PutPlaylistViewModel putPlaylistViewModel,
+            YoutubeAPIAdapterInterface youtubeAPI, SpotifyAPIAdapterInterface spotifyAPI) throws IOException {
+
+        LoadTokenOutputBoundary loadTokenOutputBoundary = new LoadTokenPresenter(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel, putPlaylistViewModel);
+        LoadTokenDataAccessInterface loadTokenDataAccessObject = new LoadTokenDataAccessObject();
+        LoadTokenInputBoundary loadTokenInteractor = new LoadTokenInteractor(loadTokenDataAccessObject, loadTokenOutputBoundary, youtubeAPI, spotifyAPI);
+
+        return new LoadTokenController(loadTokenInteractor);
+    }
+
+    private static SaveTokenController createSaveTokenUseCase(
+            ViewManagerModel viewManagerModel, GetPlaylistViewModel getPlaylistViewModel,
+            YoutubeAPIAdapterInterface youtubeAPI, SpotifyAPIAdapterInterface spotifyAPI) throws IOException {
+
+        SaveTokenOutputBoundary saveTokenOutputBoundary = new SaveTokenPresenter(viewManagerModel, getPlaylistViewModel);
+        SaveTokenDataAccessInterface saveTokenDataAccessObject = new SaveTokenDataAccessObject();
+        SaveTokenInputBoundary saveTokenInteractor = new SaveTokenInteractor(saveTokenDataAccessObject, saveTokenOutputBoundary, youtubeAPI, spotifyAPI);
+
+        return new SaveTokenController(saveTokenInteractor);
+    }
+
 
     private static LoadPlaylistController createLoadPlaylistUseCase(
             ViewManagerModel viewManagerModel, GetPlaylistViewModel getPlaylistViewModel,
@@ -65,11 +97,9 @@ public class GetPlaylistUseCaseFactory {
 
     private static YoutubeGetController createYoutubeGetUseCase(
             ViewManagerModel viewManagerModel, GetPlaylistViewModel getPlaylistViewModel,
-            ProcessPlaylistViewModel processPlaylistViewModel, TempFileWriterDataAccessObject fileWriter) throws IOException {
+            ProcessPlaylistViewModel processPlaylistViewModel, TempFileWriterDataAccessObject fileWriter, YoutubeAPIAdapterInterface api) throws IOException {
 
         YoutubeGetOutputBoundary youtubeGetOutputBoundary = new YoutubeGetPresenter(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel);
-
-        YoutubeAPIAdapterInterface api = new YoutubeAPIAdapter();
         YoutubeGetDataAccessInterface youtubeGetDataAccessObject = new YoutubeGetDataAccessObject(api);
 
         YoutubeGetInputBoundary youtubeGetInteractor = new YoutubeGetInteractor(youtubeGetDataAccessObject,
@@ -80,9 +110,8 @@ public class GetPlaylistUseCaseFactory {
 
     private static SpotifyGetController createSpotifyGetUseCase (
             ViewManagerModel viewManagerModel, GetPlaylistViewModel getPlaylistViewModel,
-            ProcessPlaylistViewModel processPlaylistViewModel, TempFileWriterDataAccessObject fileWriter) throws IOException{
+            ProcessPlaylistViewModel processPlaylistViewModel, TempFileWriterDataAccessObject fileWriter, SpotifyAPIAdapterInterface api) throws IOException{
 
-        SpotifyAPIAdapterInterface api = new SpotifyAPIAdapter();
         SpotifyGetDataAccessInterface spotifyGetDataAccessObject = new SpotifyGetDataAccessObject(api);
         SpotifyGetOutputBoundary spotifyGetOutputBoundary = new SpotifyGetPresenter(viewManagerModel, getPlaylistViewModel, processPlaylistViewModel);
 

@@ -10,7 +10,7 @@ import java.net.URL;
 import java.util.Objects;
 
 public class YoutubeAPIAdapter extends APIcaller implements YoutubeAPIAdapterInterface {
-    private final String apiKey;
+    private String apiKey;
 
     public YoutubeAPIAdapter() {
         this.apiKey = "AIzaSyDBBye718R0GFZp0Q09jmisniArShBFInI";
@@ -20,6 +20,13 @@ public class YoutubeAPIAdapter extends APIcaller implements YoutubeAPIAdapterInt
         this.scope = "https://www.googleapis.com/auth/youtube";
         this.authCodeUrl = "https://accounts.google.com/o/oauth2/v2/auth?";
         this.authTokenExchange = "https://oauth2.googleapis.com/token";
+    }
+
+    @Override
+    public void setTokens(String clientID, String clientSecret, String apiKey) {
+        this.clientID = clientID;
+        this.clientSecret = clientSecret;
+        this.apiKey = apiKey;
     }
 
     @Override
