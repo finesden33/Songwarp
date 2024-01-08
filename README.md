@@ -1,50 +1,38 @@
 # SongWarp
-## Group Members:
-- Abhishek Sharma
-- Ethan Fine
-- Aria Coventry
-- Xinze Wang
-- Mahek Cheema
 
-## Our Project
-A Music playlist manager that can convert a YouTube playlist to a Spotify playlist and vice versa, plus additional playlist manager features.
+Do you have a music playlist on YouTube you want on Spotify? Or a Spotify playlist you want on YouTube? This YouTube-Spotify Playlist converter has got you covered!
 
-## Software Specification
-- Uses YouTube and Spotify APIs to build song instances with as much attributes as possible. This is done by
-getting info about a song from one site and matching it to a song on the other site.
-- The YouTube to Spotify matching algorithm takes a YouTube url and outputs a song name & author name by
-deciphering the video title and channel name, which it then uses for a Spotify search.
-- The Spotify to YouTube matching algorithm takes a song’s name and author name attributes and searches
-YouTube for best match.
-- After it matches as much as it can, it prompts the user to manually decide what the matching song should be
-(via suggestion or manual lookup) for all the songs it couldn’t find a definite match for.
-- These song instances combine to form the playlist object, which contains enough info to create a YouTube
-playlist, a Spotify playlist, or a json file (which can be downloaded or copied from a textbox).
-- The song instances also have a genre attribute, which can be used to split the playlist into multiple playlists
-based on genre. (And then the program can upload all or some of those playlists at once)
-- The program needs access to your accounts to upload the outputted playlist onto your account (but for
-inputting an initial playlist, it just needs a url pasted into a textbox
+This software lets you input a url for a YouTube Playlist, and it'll convert it into something you can upload to your Spotify account. You can also do the same from Spotify to YouTube.
 
-## Use case examples
-1. Convert a playlist from Youtube to Spotify/ Spotify to Youtube
-   - a. user is prompted to input the link to their curated Youtube or Spotify playlist
-   - b. the application will match songs across platform databases by identifying song attributes, such as song title
-   and author
-   - c. if a song is not found then the user is prompted to choose a similar song or skip the current song
-   - d. after matching songs, the playlist is created and uploaded to the recipient Youtube or Spotify account
-2. Saving a playlist as a save file or loading a saved playlist file onto the program
-   - a. user manually downloads or uploads a json formatted file of the respective playlist to the application
-3. Splitting a Youtube playlist into several sub-playlists by genre (can also be done with Spotify playlists)
-   - a. user is prompted to input the link to their curated Youtube playlist
-   - b. songs are matched in the Spotify database and genre attributes for each song are identified
-   - c. songs are then sorted into sub-playlists based on the genre attributes
-     - i. if a genre attribute is not found for a song then the user is prompted to input the genre manually or
-     the song will be placed in an “unknown genre” playlist
-   - d. playlists are then uploaded onto the specified Youtube account
+## Created by:
+- Abhishek Sharma (abhilo)
+- Ethan Fine (finesden33)
+- Xinze Wang (wilson0516)
+- Mahek Cheema (mmahekk)
+
+
+## Specification
+- **YouTube to Spotify Playlist Conversion:** YouTube playlist url → Match Songs → Upload to Spotify account
+
+- **Spotify to YouTube Playlist Conversion:** Spotify playlist url → Match Songs → Upload to YouTube account
+
+- **Save Playlist as a File or View Playlist:** Spotify or YouTube url → Match Songs → Download File or View
+
+- **Load Saved File for Playlist Conversion:** Spotify or YouTube url → Try matching songs → Run out of
+  tokens → Auto-save playlist file → Reload program later → Load
+  file → Continue matching → Download/View/Upload
+
+- **Load / Create an API token sheet or use the default shared API keys (not recommended)**
 
 
 ## API usage documentation links
-- **Spotify API:** (for PUT/GET requests for the user's spotify account)
+- **Spotify API:**
   https://developer.spotify.com/documentation/web-api
-- **YouTube API:** (for PUT/GET requests for the user's youtube account)
+- **YouTube API:**
   https://developers.google.com/youtube/v3/getting-started
+
+# Notes:
+- Currently, you have to create a project (we used IntelliJ) with SDK set to Oracle openJDK 20
+- Currently, if you do not make your own YouTube and Spotify API projects (through your Spotify and Google accounts), you can opt to ignore creating/loading an API token sheet. However, this means you need to request access from the project owner (a joint account that the group members have access to).
+- Converting from a Spotify playlist to YouTube is a lot more expensive (API token wise) than vice versa. This is because Youtube API calls, especially search song and add song to playlist use a lot of the daily API quota. Therefore, if your playlist has about 80 songs or more, it will probably run out of tokens. But don't worry, since in the case you run out of tokens, the program will autosave your progress and you can continue the following day when your quota renews. (This isn't so much a problem YouTube to Spotify, since Spotify API requests are pretty cheap. You can easily get away with converting+uploading a 500+ song youtube playlist through our program). 
+- If you want to know precise quota specifications: There is a daily 10,000 quota for YouTube API usage per day per API project. Say, your spotify playlist had 100 songs. The program will need to perform 100 video search requests, 1 playlist creation request, and 100 song addition requests. Each video search request costs 100 quota, the playlist creation costs 50 quota, and then each song addition costs 50 quota. Also, when performing a YouTube to Spotify conversion, only the Playlist get request from the Youtube API is necessary. This costs 1 quota per 50 songs in the playlist (rounded up) (e.g. a 583 playlist would cost 12 YouTube API quota to retrieve all the data for it)
